@@ -3,6 +3,7 @@
 import os
 import re
 import PyPDF2
+import subprocess
 
 def encontrar_nome_e_cpf_no_pdf(pdf_path, palavras_chave=["Nome Completo"]):
     """
@@ -16,15 +17,16 @@ def encontrar_nome_e_cpf_no_pdf(pdf_path, palavras_chave=["Nome Completo"]):
         str: O nome e CPF extraídos do PDF ou None se não for encontrado.
     """
     try:
-        with open(pdf_path, 'rb') as pdf_file:
-            pdf_reader = PyPDF2.PdfReader(pdf_file)
-            if not pdf_reader.pages:
+        with open(pdf_path, 'rb') as pdf_file: # Abre o arquivo conforme a necessidade, e após a utilização já fecha o arquivo novamente
+            pdf_reader = PyPDF2.PdfReader(pdf_file) # Lê o arquivo e envia ele para memoria
+            if not pdf_reader.pages:  # Verifica se o PDF está vazio
                 print(f"Erro: PDF '{pdf_path}' está vazio.")
                 return None
 
             for page in pdf_reader.pages:  # Itera por todas as páginas
                 text = page.extract_text()
                 if not text.strip():
+                    print(f"Aviso: Página vazia no PDF '{pdf_path}'. Pulando para a próxima página.")
                     continue
 
                 for palavra_chave in palavras_chave:
@@ -37,7 +39,7 @@ def encontrar_nome_e_cpf_no_pdf(pdf_path, palavras_chave=["Nome Completo"]):
 
             print(f"Aviso: Nenhuma palavra-chave encontrada no PDF '{pdf_path}'. Tentando extrair a primeira linha.")
             # Se nenhuma palavra-chave for encontrada, tenta extrair a primeira linha
-            first_page = pdf_reader.pages[0]
+            first_page = pdf_reader.pages[0] 
             text = first_page.extract_text()
             if not text.strip():
                 print(f"Erro: Não foi possível extrair texto do PDF '{pdf_path}'.")
@@ -130,7 +132,12 @@ def renomear_pdf(diretorio):
                 except Exception as e:
                     print(f"Erro ao renomear '{filename}': {e}")
 
+def chamarScript():
+    subprocess.run(['python', '.\RenomearPDF\clearName.py'])
+
 
 # Exemplo de uso:
 diretorio_pdfs = r"C:\Users\pedro.sanchez\Projetos\RenomearPDF\pdf"  # Substitua pelo seu diretório
 renomear_pdf(diretorio_pdfs)
+chamarScript()
+

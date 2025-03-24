@@ -63,5 +63,6 @@ def limpar_nomes_no_diretorio(diretorio):
 
 
 # Exemplo de uso:
+
 diretorio_arquivos = r"C:\Users\pedro.sanchez\Projetos\RenomearPDF\pdf"  # Substitua pelo seu diretório
 limpar_nomes_no_diretorio(diretorio_arquivos)

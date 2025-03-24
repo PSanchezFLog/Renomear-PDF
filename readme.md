@@ -1,5 +1,5 @@
 # Programa renomear nomes de PDF
-###### Versão 1.0.0
+###### Versão 1.1.0
 ## Funcionalidade principal: Renomear grandes volumes de PDF referente a Comprovantes de Rendimentos
 
 
@@ -9,3 +9,10 @@
 2. Criar uma pasta de nome pdf onde os PDF's vão ficar contidos
 3. Executar o programa main.py (necessário ter python instalado e as seguintes bibliotecas: PyPDF2)
 4. Alguns arquivos ainda não estão conseguindo ter o nome trocado automaticamente, conferir estes manualmente
+
+
+
+#### Patch 1.1.0
+
+1. Melhoria na aquisição de dados do PDF
+2. Redução no trabalho manual realizado

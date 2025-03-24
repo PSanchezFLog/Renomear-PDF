@@ -5,52 +5,50 @@ import re
 import PyPDF2
 import subprocess
 
-def encontrar_nome_e_cpf_no_pdf(pdf_path, palavras_chave=["Nome Completo"]):
+def encontrar_nome_e_cpf_no_pdf(pdf_path, palavras_chave=["Nome Completo", "Nome Empresarial", "Razão Social"]):
     """
-    Tenta encontrar o nome e o CPF de uma pessoa em um arquivo PDF, procurando por palavras-chave.
+    Tenta encontrar o nome (pessoa física ou jurídica) e o CPF/CNPJ em um arquivo PDF, procurando por palavras-chave.
 
     Args:
         pdf_path (str): O caminho para o arquivo PDF.
         palavras_chave (list): Uma lista de palavras-chave para procurar antes do nome.
 
     Returns:
-        str: O nome e CPF extraídos do PDF ou None se não for encontrado.
+        str: O nome/razão social e CPF/CNPJ extraídos do PDF ou None se não for encontrado.
     """
     try:
-        with open(pdf_path, 'rb') as pdf_file: # Abre o arquivo conforme a necessidade, e após a utilização já fecha o arquivo novamente
-            pdf_reader = PyPDF2.PdfReader(pdf_file) # Lê o arquivo e envia ele para memoria
-            if not pdf_reader.pages:  # Verifica se o PDF está vazio
+        with open(pdf_path, 'rb') as pdf_file:
+            pdf_reader = PyPDF2.PdfReader(pdf_file)
+            if not pdf_reader.pages:
                 print(f"Erro: PDF '{pdf_path}' está vazio.")
                 return None
 
-            for page in pdf_reader.pages:  # Itera por todas as páginas
+            for page in pdf_reader.pages:
                 text = page.extract_text()
                 if not text.strip():
                     print(f"Aviso: Página vazia no PDF '{pdf_path}'. Pulando para a próxima página.")
                     continue
 
                 for palavra_chave in palavras_chave:
-                    # Procura pela palavra-chave e extrai o texto após ela (agora incluindo CPF)
-                    match = re.search(rf"{palavra_chave}\s*([\w\s\.\-]+)", text, re.IGNORECASE)
+                    # Modifiquei a regex para incluir a barra e o hífen, comuns em CNPJ
+                    match = re.search(rf"{palavra_chave}\s*([\w\s\.\-/]+)", text, re.IGNORECASE)
                     if match:
-                        nome_e_cpf = match.group(1).strip()
-                        if nome_e_cpf:
-                            return nome_e_cpf
+                        nome_ou_razao_social_e_id = match.group(1).strip()
+                        if nome_ou_razao_social_e_id:
+                            return nome_ou_razao_social_e_id
 
             print(f"Aviso: Nenhuma palavra-chave encontrada no PDF '{pdf_path}'. Tentando extrair a primeira linha.")
-            # Se nenhuma palavra-chave for encontrada, tenta extrair a primeira linha
-            first_page = pdf_reader.pages[0] 
+            first_page = pdf_reader.pages[0]
             text = first_page.extract_text()
             if not text.strip():
                 print(f"Erro: Não foi possível extrair texto do PDF '{pdf_path}'.")
                 return None
-            
-            # Tenta extrair a primeira linha (agora incluindo CPF)
-            nome_e_cpf = text.split('\n')[0].strip()
-            if nome_e_cpf:
-                return nome_e_cpf
+
+            nome_ou_razao_social_e_id = text.split('\n')[0].strip()
+            if nome_ou_razao_social_e_id:
+                return nome_ou_razao_social_e_id
             else:
-                print(f"Erro: Primeira linha do PDF '{pdf_path}' não parece ser um nome válido.")
+                print(f"Erro: Primeira linha do PDF '{pdf_path}' não parece ser um nome/razão social válido.")
                 return None
 
     except PyPDF2.errors.PdfReadError:
@@ -61,40 +59,41 @@ def encontrar_nome_e_cpf_no_pdf(pdf_path, palavras_chave=["Nome Completo"]):
         return None
 
 
-def remover_cpf_do_nome(nome_e_cpf):
+def remover_cpf_do_nome(nome_ou_razao_social_e_id):
     """
-    Remove o CPF (se presente) e o texto adicional do texto que contém o nome e o CPF.
+    Remove o CPF ou CNPJ (se presente) e o texto adicional do texto extraído.
 
     Args:
-        nome_e_cpf (str): O texto que contém o nome, o CPF e possivelmente texto adicional.
+        nome_ou_razao_social_e_id (str): O texto que contém o nome/razão social, CPF/CNPJ e possivelmente texto adicional.
 
     Returns:
-        str: O nome sem o CPF e sem o texto adicional.
+        str: O nome/razão social sem o CPF/CNPJ e sem o texto adicional.
     """
     # Procura por um padrão de CPF (XXX.XXX.XXX-XX)
     cpf_pattern = r"\d{3}\.\d{3}\.\d{3}-\d{2}"
-    
-    # Remove o CPF
-    nome_sem_cpf = re.sub(cpf_pattern, "", nome_e_cpf)
-    
-    # Expressão regular para capturar apenas o nome (letras maiúsculas, minúsculas, acentos e espaços)
-    # e parar quando encontrar algo que não seja uma letra ou espaço.
-    nome_pattern = r"^([A-Za-zÀ-ú]+(?:\s[A-Za-zÀ-ú]+)*)(?=[^A-Za-zÀ-ú\s]|$)"
+    # Procura por um padrão de CNPJ (XX.XXX.XXX/YYYY-ZZ)
+    cnpj_pattern = r"\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}"
 
-    # Procura pelo nome usando a nova expressão regular
-    match = re.search(nome_pattern, nome_sem_cpf)
-    
+    # Remove o CPF
+    nome_sem_cpf_cnpj = re.sub(cpf_pattern, "", nome_ou_razao_social_e_id)
+    # Remove o CNPJ
+    nome_sem_cpf_cnpj = re.sub(cnpj_pattern, "", nome_sem_cpf_cnpj)
+
+    # Expressão regular para capturar apenas o nome/razão social (letras maiúsculas, minúsculas, acentos, espaços e alguns caracteres especiais comuns em nomes de empresas)
+    nome_pattern = r"^([A-Za-zÀ-ú\s\.\-,&]+)(?=[^A-Za-zÀ-ú\s\.\-,&]|$)"
+    match = re.search(nome_pattern, nome_sem_cpf_cnpj)
+
     if match:
-        nome = match.group(1).strip()
+        nome_limpo = match.group(1).strip()
     else:
-        nome = nome_sem_cpf.strip() # Caso não encontre o padrão, retorna o texto limpo.
-    
+        nome_limpo = nome_sem_cpf_cnpj.strip()
+
     # Limpeza final
-    nome = re.sub(r'[\/*?:"<>|\n]', "", nome)
-    nome = re.sub(r'\s+', ' ', nome)
-    nome = nome.strip()
-    
-    return nome
+    nome_limpo = re.sub(r'[\/*?:"<>|\n]', "", nome_limpo)
+    nome_limpo = re.sub(r'\s+', ' ', nome_limpo)
+    nome_limpo = nome_limpo.strip()
+
+    return nome_limpo
 
 
 def renomear_pdf(diretorio):
@@ -139,5 +138,4 @@ def chamarScript():
 # Exemplo de uso:
 diretorio_pdfs = r"C:\Users\pedro.sanchez\Projetos\RenomearPDF\pdf"  # Substitua pelo seu diretório
 renomear_pdf(diretorio_pdfs)
-chamarScript()
-
+chamarScript() # Comentei essa linha para evitar a execução de outro script agora

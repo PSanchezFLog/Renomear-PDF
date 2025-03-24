@@ -4,6 +4,7 @@ import os
 import re
 import PyPDF2
 import subprocess
+import time
 
 def encontrar_nome_e_cpf_no_pdf(pdf_path, palavras_chave=["Nome Completo", "Nome Empresarial", "Razão Social"]):
     """
@@ -139,3 +140,6 @@ def chamarScript():
 diretorio_pdfs = r"C:\Users\pedro.sanchez\Projetos\RenomearPDF\pdf"  # Substitua pelo seu diretório
 renomear_pdf(diretorio_pdfs)
 chamarScript() # Comentei essa linha para evitar a execução de outro script agora
+print()
+print("Nomes alterados!")
+time.sleep(10)

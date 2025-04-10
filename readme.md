@@ -5,11 +5,12 @@
 
 ### 1. Como utilizar:
 
-1. Baixar os arquivos desejados para renomear
-2. Criar uma pasta de nome pdf onde os PDF's vão ficar contidos
-3. A pasta deve estar no mesmo local que o arquivo main.py
-4. Executar o programa main.py (necessário ter Python instalado e a biblioteca PyPDF2. Para instalar a biblioteca, execute o comando: `pip install PyPDF2`)
-5. Alguns arquivos podem não ser renomeados automaticamente, nesses casos, a renomeação manual será necessária
+1. Utilizar o separador caso o arquivo com os informes todos juntos (em um arquivo só maior)
+2. Buscar os arquivos e direcionar o programa para a pasta correta
+3. Criar uma pasta de nome pdf onde os PDF's vão ficar contidos
+4. A pasta deve estar no mesmo local que o arquivo main.py
+5. Executar o programa main.py (necessário ter Python instalado e a biblioteca PyPDF2. Para instalar a biblioteca, execute o comando: `pip install PyPDF2`)
+6. Alguns arquivos podem não ser renomeados automaticamente, nesses casos, a renomeação manual será necessária
 
 ### 2. Processo de Renomeação:
 
@@ -23,6 +24,11 @@ Exemplo: "Comprovante_001.pdf" pode ser renomeado para "Nome Exemplo.pdf"
 
 1. Melhoria na aquisição de dados do PDF
 2. Redução no trabalho manual realizado
+
+
+#### Patch 1.2.0
+
+1. Criação do arquivo para separa PDF's
 
 
 ### 4. Limitações:
